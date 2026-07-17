@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"/>
+<title>Pedruh Tutorials — Log In</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<style>
+:root{
+  --navy:#081524;--navy2:#0f2740;--navy3:#183955;
+  --accent:#2f7fb8;--accent2:rgba(47,127,184,.1);
+  --ice:#eef3f8;--fog3:#d6e1ec;--white:#fff;
+  --text:#0a1a2f;--text2:#3d5470;--text3:#88a0b8;
+  --red:#d1495b;--red2:rgba(209,73,91,.1);
+  --r:16px;--r2:12px;--r3:100px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--ice);color:var(--text)}
+.wrap{width:100%;max-width:430px;min-height:100dvh;margin:0 auto;display:flex;flex-direction:column;position:relative}
+.top{background:linear-gradient(135deg,var(--navy),var(--navy2));padding:56px 28px 46px;border-radius:0 0 32px 32px;position:relative;overflow:hidden;text-align:center}
+.top::before{content:'';position:absolute;top:-40px;right:-40px;width:170px;height:170px;border-radius:50%;background:radial-gradient(circle,rgba(47,127,184,.32),transparent 70%)}
+.logo-mark{width:64px;height:64px;border-radius:18px;background:rgba(255,255,255,.08);border:1.5px dashed rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.55);font-size:1.6rem;margin:0 auto 16px;overflow:hidden}
+.logo-mark img{width:100%;height:100%;object-fit:cover}
+.brand{font-family:'Cormorant Garamond',serif;font-size:1.75rem;font-style:italic;color:#fff}
+.brand span{color:#9fc9e8}
+.tagline{font-size:.78rem;color:rgba(255,255,255,.55);margin-top:6px}
+.body{flex:1;padding:28px 26px 40px}
+.fg{margin-bottom:16px}
+.fg label{display:block;font-weight:600;font-size:.72rem;color:var(--text2);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.04em}
+.fg input{width:100%;padding:.85rem 1rem;border:1.5px solid var(--fog3);border-radius:var(--r2);font-family:'DM Sans',sans-serif;font-size:.9rem;background:var(--white);color:var(--text);outline:none;transition:border-color .2s}
+.fg input:focus{border-color:var(--accent)}
+.pw-wrap{position:relative}
+.pw-toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text3);cursor:pointer;background:none;border:none;font-size:.9rem}
+.alert{padding:.75rem 1rem;border-radius:var(--r2);font-size:.8rem;font-weight:500;margin-bottom:1rem;display:none;line-height:1.5}
+.alert.err{background:#fdf0f1;border:1px solid rgba(209,73,91,.2);color:var(--red);display:block}
+.btn-main{width:100%;padding:15px;background:linear-gradient(135deg,var(--navy),var(--accent));border:none;border-radius:var(--r2);font-family:'DM Sans',sans-serif;font-weight:800;font-size:.95rem;color:#fff;cursor:pointer;box-shadow:0 6px 20px rgba(8,21,36,.25);margin-top:6px}
+.btn-main:active{transform:scale(.98)}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:.4rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.foot{text-align:center;margin-top:22px;font-size:.84rem;color:var(--text2)}
+.foot a{color:var(--accent);font-weight:700;text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="logo-mark" id="logoMark"><i class="fas fa-image"></i></div>
+    <div class="brand">Pedruh <span>Tutorials</span></div>
+    <div class="tagline">Study Smart, Score Higher</div>
+  </div>
+  <div class="body">
+    <div class="alert" id="loginAlert"></div>
+    <div class="fg"><label>Email</label><input type="email" id="email" placeholder="you@example.com"/></div>
+    <div class="fg">
+      <label>Password</label>
+      <div class="pw-wrap">
+        <input type="password" id="password" placeholder="••••••••"/>
+        <button class="pw-toggle" type="button" onclick="togglePw()"><i class="fas fa-eye" id="pwIcon"></i></button>
+      </div>
+    </div>
+    <button class="btn-main" id="loginBtn" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i>&nbsp; Log In</button>
+    <div class="foot">New here? <a href="signup.html">Create an account</a></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDDxgf6jtPi4FXl5Dhp7ALnxVTCquxVH-U",
+  authDomain: "pedruh-tutorials.firebaseapp.com",
+  projectId: "pedruh-tutorials",
+  storageBucket: "pedruh-tutorials.firebasestorage.app",
+  messagingSenderId: "894303861523",
+  appId: "1:894303861523:web:4d9ffab83dc3d838ae38e6",
+  measurementId: "G-MG49BFGEB5"
+};
+const fapp=initializeApp(firebaseConfig),auth=getAuth(fapp),db=getFirestore(fapp);
+const $=id=>document.getElementById(id);
+
+(async()=>{
+  try{const s=await getDoc(doc(db,'settings','branding'));const url=s.exists()?s.data().logoUrl:'';if(url)$('logoMark').innerHTML=`<img src="${url}"/>`;}catch(e){}
+})();
+
+window.togglePw=()=>{
+  const inp=$('password');const ic=$('pwIcon');
+  if(inp.type==='password'){inp.type='text';ic.className='fas fa-eye-slash';}else{inp.type='password';ic.className='fas fa-eye';}
+};
+function setAlert(msg){const el=$('loginAlert');el.textContent=msg;el.className='alert err';}
+function clrAlert(){$('loginAlert').className='alert';}
+
+window.doLogin=async()=>{
+  clrAlert();
+  const email=$('email').value.trim(),pw=$('password').value;
+  if(!email||!pw){setAlert('Please enter your email and password');return;}
+  const btn=$('loginBtn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Logging in…';
+  try{
+    const cred=await signInWithEmailAndPassword(auth,email,pw);
+    const s=await getDoc(doc(db,'users',cred.user.uid));
+    if(s.exists()&&s.data().canLogin===false){setAlert('Your account has been suspended. Contact the admin.');btn.disabled=false;btn.innerHTML='<i class="fas fa-sign-in-alt"></i>&nbsp; Log In';return;}
+    if(s.exists()&&s.data().role==='admin'){location.href='admin.html';}else{location.href='dashboard.html';}
+  }catch(e){
+    let msg='Login failed. Please check your details and try again.';
+    if(e.code==='auth/invalid-credential'||e.code==='auth/wrong-password'||e.code==='auth/user-not-found')msg='Incorrect email or password.';
+    setAlert(msg);
+    btn.disabled=false;btn.innerHTML='<i class="fas fa-sign-in-alt"></i>&nbsp; Log In';
+  }
+};
+document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+</script>
+</body>
+</html>
