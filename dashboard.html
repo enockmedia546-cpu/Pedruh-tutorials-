@@ -517,7 +517,7 @@ onAuthStateChanged(auth,async u=>{
   CU=u;
   const s=await getDoc(doc(db,'users',u.uid));
   PROF=s.exists()?s.data():{fullName:u.displayName||'Student',year:'Year 1',studentId:'—',email:u.email,profilePhoto:'',phone:''};
-  if(PROF.canLogin===false){await signOut(auth);location.href='login.html';return;}
+  if(PROF.canLogin===false){await signOut(auth);location.href='index.html';return;}
   fillUI(PROF);
   await loadBranding();
   await loadSettings();
